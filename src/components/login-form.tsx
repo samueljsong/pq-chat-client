@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/context/AuthorizationContext.tsx"
 
 import { toast } from "sonner"
 
@@ -21,42 +22,42 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
 
     const navigate = useNavigate();
+    const { login } = useAuth();
 
-    const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        
-        const formData  = new FormData(e.target as HTMLFormElement);
 
-        const body = {
-            EmailAddress : formData.get("email"),
-            Password     : formData.get("password"),
-        }
+const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
 
-        try {
-            await toast.promise(
-                fetch("http://localhost:5172/api/user/loginUser", {
-                    method: "POST",
-                    headers: {
-                    "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(body),
-                }).then(async (res) => {
-                    if (!res.ok) throw new Error("Invalid login");
+  const formData = new FormData(e.target as HTMLFormElement);
 
-                    return res.json();
-                }),
-                {
-                    loading: "Logging in...",
-                    success: "Logged in successfully!",
-                    error: "Invalid email or password",
-                }
-            );
+  const body = {
+    EmailAddress: formData.get("email"),
+    Password: formData.get("password"),
+  };
 
-            navigate("/");
-        } catch (err) {
-            console.error(err);
-        }
-    }
+  try {
+    const loginPromise = fetch("http://localhost:5172/api/user/loginUser", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }).then(async (res) => {
+      if (!res.ok) throw new Error("Invalid login");
+      return (await res.json()) as { token: string }; // expects { token: "..." }
+    });
+
+    toast.promise(loginPromise, {
+      loading: "Logging in...",
+      success: "Logged in successfully!",
+      error: "Invalid email or password",
+    });
+
+    const data = await loginPromise;     // ✅ THIS is your JSON
+    login(data.token);                   // ✅ stores token
+    navigate("/");
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
