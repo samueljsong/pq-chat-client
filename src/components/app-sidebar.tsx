@@ -19,10 +19,17 @@ import {
 
 import logo from "@/assets/logo.png"
 
+import { useAuth } from "@/context/AuthorizationContext.tsx"
+
 export function AppSidebar() {
 
     const { state } = useSidebar()
     const collapsed = state === "collapsed"
+    const { logout } = useAuth();
+
+    const onLogoutClickHandler = () => {
+        logout();
+    }
     
     return (
         <Sidebar collapsible="icon" className="w-64 data-[collapsed=true]:w-16">
@@ -33,13 +40,13 @@ export function AppSidebar() {
                             <DropdownMenuTrigger asChild>
                                 <SidebarMenuButton
                                     className={[
-                                        "w-full",
+                                        "w-full h-12",
                                         collapsed ? "justify-center px-0" : "justify-start"
                                     ].join(" ")}
                                     >
                                     <div
                                         className={[
-                                        "flex items-center",
+                                        "flex items-center h-12",
                                         collapsed ? "justify-center" : "gap-2"
                                         ].join(" ")}
                                     >
@@ -47,8 +54,7 @@ export function AppSidebar() {
 
                                         {!collapsed && (
                                         <div className="flex flex-col leading-none">
-                                            <p className="font-bold">Securecado</p>
-                                            <p className="text-sm">Secure chat app</p>
+                                            <p className=" font-medium">Securecado</p>
                                         </div>
                                     )}
                                     </div>
@@ -70,7 +76,7 @@ export function AppSidebar() {
             <SidebarFooter>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton>
+                        <SidebarMenuButton onClick={onLogoutClickHandler}>
                         Logout
                         </SidebarMenuButton>
                     </SidebarMenuItem>

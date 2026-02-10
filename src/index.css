@@ -121,3 +121,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+:root {
+  --text-squish-y: 0.95; /* tweak: 0.98 subtle, 0.90 strong */
+  --text-word-spacing: -0.05em;
+  --text-letter-spacing: -0.01em;
+}
+
+h1, h2, h3, h4, h5, h6 ,p, a{
+    display: inline-block;
+
+  transform: scaleY(var(--text-squish-y));
+  transform-origin: center;
+
+  word-spacing: var(--text-word-spacing);
+  letter-spacing: var(--text-letter-spacing);
+}
