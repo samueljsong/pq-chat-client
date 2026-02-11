@@ -68,7 +68,7 @@ export const FriendRoomComponent = () => {
                     :   
                         <div className=" flex gap-4 w-full flex-wrap">
                             {users.map((user: any) => (
-                                <UserCardComponent key={user.userId} username={user.username} firstName={user.firstName} lastName={user.lastName} />
+                                <UserCardComponent key={user.userId} userId={user.userId} username={user.username} firstName={user.firstName} lastName={user.lastName} />
                             ))}
                         </div>
             }

@@ -1,5 +1,6 @@
 type UserCardComponentType = {
   username: string
+  userId: string
   firstName: string
   lastName: string
 }
@@ -16,10 +17,46 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 
+import { toast } from "sonner";
+
 import avatarIcon from "../assets/03.png"
 import { Avatar, AvatarImage } from "./ui/avatar"
 
-export const UserCardComponent = ({ username, firstName, lastName }: UserCardComponentType) => {
+export const UserCardComponent = ({ username, userId, firstName, lastName }: UserCardComponentType) => {
+    
+    const onAdd = async () => {
+        const promise = sendFriendRequest(userId);
+        toast.promise(promise, {
+            loading: "Sending friend request...",
+            success: "Friend request sent!",
+            error: "Failed to send friend request.",
+        });
+
+        await promise;
+    }
+
+    const sendFriendRequest = async (userId: string) => {
+        const token = localStorage.getItem("token");
+        if (!token) 
+            throw new Error("Not authenticated");
+
+        const result = await fetch("http://localhost:5172/api/friendship/sendRequest", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                recipientUserId: userId
+            })
+        });
+
+        if (!result.ok) {
+            const text = await result.text();
+            throw new Error(text || "Failed to send friend request");
+        }
+    }
+    
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -30,7 +67,7 @@ export const UserCardComponent = ({ username, firstName, lastName }: UserCardCom
                     </Avatar>
 
                     <div className="flex justify-between w-full items-center">
-                    <div className="flex flex-col">
+                    <div className="flex flex-col text-start">
                         <span className="text-sm font-medium">
                         {firstName} {lastName}
                         </span>
@@ -60,7 +97,7 @@ export const UserCardComponent = ({ username, firstName, lastName }: UserCardCom
                     </Button>
                 </DialogClose>
 
-                <Button className="cursor-pointer" type="button" onClick={() => {/* send request */}}>
+                <Button className="cursor-pointer" type="button" onClick={() => onAdd()}>
                     Send request
                 </Button>
                 </DialogFooter>
