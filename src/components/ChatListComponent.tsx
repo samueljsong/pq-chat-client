@@ -14,11 +14,21 @@ import { Search } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area"
 
 import { ChatCardComponent } from "@/components/ChatCardComponent";
+import { EmptyChatListComponent } from "./EmptyChatListComponent";
+
+
+import { useEffect, useState } from "react";
 
 export const ChatListComponent = () => {
+    
+    useEffect(() => {
+
+    }, [])
+
+    const [chatList, setChatList] = useState([]);
 
     return(
-        <Card className=" bg-white h-full w-110 min-w-90 rounded-xl pb-0 flex-col">
+        <Card className=" bg-white h-full w-110 min-w-90 rounded-xl pb-0 flex flex-col">
             <CardHeader>
                 <CardTitle className=" text-2xl font-medium">Chats</CardTitle>
                 <CardAction>
@@ -38,7 +48,8 @@ export const ChatListComponent = () => {
             </CardHeader>
             <ScrollArea className=" flex-1 min-h-0 w-full rounded-b-xl">
                 <div className=" flex flex-col">
-                    <ChatCardComponent/>
+                    <EmptyChatListComponent></EmptyChatListComponent>
+                    {/* <ChatCardComponent/>
                     <Separator/>
                     <ChatCardComponent/>
                           <Separator/>
@@ -60,7 +71,7 @@ export const ChatListComponent = () => {
                           <Separator/>
                     <ChatCardComponent/>
                           <Separator/>
-                    <ChatCardComponent/>
+                    <ChatCardComponent/> */}
                 </div>
             </ScrollArea>
         </Card>

@@ -26,6 +26,7 @@ export function SignupForm({
         const formData  = new FormData(e.target as HTMLFormElement);
 
         const body = {
+            Username     : formData.get("username"),
             FirstName    : formData.get("firstName"),
             LastName     : formData.get("lastName"),
             EmailAddress : formData.get("email"),
@@ -91,6 +92,16 @@ export function SignupForm({
                 />
             </Field>
           </div>
+          <Field>
+                <FieldLabel htmlFor="username">Username</FieldLabel>
+                <Input
+                id="username"
+                name="username"
+                type="text"
+                placeholder="john_doe"
+                required
+                />
+            </Field>
           <Field>
             <FieldLabel htmlFor="email">Email</FieldLabel>
             <Input

@@ -5,18 +5,20 @@ import { MessageSquare, Bell, LogOut, Users } from 'lucide-react';
 import { HoverButton } from './HoverButton';
 
 import { useAuth } from '@/context/AuthorizationContext';
+import { useNavigate } from 'react-router-dom';
 
 
 export const VerticalNavbar = () => {
 
     const { logout } = useAuth();
+    const navigate = useNavigate();
 
     const onMessageClickHandler = () => {
-        // navigate to messages page
+        navigate('/');
     }
 
     const onUserClickHandler = () => {
-        // navigate to users page
+        navigate('/friends');
     }   
 
     const onNotificationsClickHandler = () => {
