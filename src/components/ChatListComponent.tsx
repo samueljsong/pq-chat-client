@@ -16,16 +16,45 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { ChatCardComponent } from "@/components/ChatCardComponent";
 import { EmptyChatListComponent } from "./EmptyChatListComponent";
 
+import type { ConversationListItem } from "@/types/ConversationType";
 
 import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthorizationContext";
 
 export const ChatListComponent = () => {
+
+    const { token } = useAuth();
+    const [chatList, setChatList] = useState<ConversationListItem[]>([]);
+
+    const getAllConversations = async (): Promise<ConversationListItem[]> => {
+        if (!token) throw new Error("Not authenticated");
+
+        const res = await fetch("http://localhost:5172/api/conversation/getAll", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+        });
+
+        if (!res.ok) throw new Error(await res.text());
+        return await res.json();
+    };
     
     useEffect(() => {
+        if (!token) return;
 
-    }, [])
+        const load = async () => {
+        try {
+            const data = await getAllConversations();
+            setChatList(data);
+        } catch (err) {
+            console.error(err);
+            setChatList([]);
+        }
+        };
 
-    const [chatList, setChatList] = useState([]);
+        load();
+    }, [token])
+
 
     return(
         <Card className=" bg-white h-full w-110 min-w-90 rounded-xl pb-0 flex flex-col">
@@ -48,30 +77,24 @@ export const ChatListComponent = () => {
             </CardHeader>
             <ScrollArea className=" flex-1 min-h-0 w-full rounded-b-xl">
                 <div className=" flex flex-col">
-                    <EmptyChatListComponent></EmptyChatListComponent>
-                    {/* <ChatCardComponent/>
-                    <Separator/>
-                    <ChatCardComponent/>
-                          <Separator/>
-                    <ChatCardComponent/>
-                          <Separator/>
-                    <ChatCardComponent/>
-                          <Separator/>
-                    <ChatCardComponent/>
-                          <Separator/>
-                    <ChatCardComponent/>
-                          <Separator/>
-                    <ChatCardComponent/>
-                          <Separator/>
-                    <ChatCardComponent/>
-                          <Separator/>
-                    <ChatCardComponent/>
-                          <Separator/>
-                    <ChatCardComponent/>
-                          <Separator/>
-                    <ChatCardComponent/>
-                          <Separator/>
-                    <ChatCardComponent/> */}
+                    {
+                        (chatList.length === 0) 
+                            ? <EmptyChatListComponent />
+                            : chatList.map((chat) => {
+                                return <>
+                                    <ChatCardComponent 
+                                        key                = { chat.conversationId     } 
+                                        conversationId     = { chat.conversationId     } 
+                                        otherFirstName     = { chat.otherFirstName     } 
+                                        otherLastName      = { chat.otherLastName      } 
+                                        otherUserName      = { chat.otherUsername      } 
+                                        lastMessagePreview = { chat.lastMessagePreview } 
+                                        lastMessageAt      = { chat.lastMessageAt      }
+                                    />
+                                    <Separator/>
+                                </>
+                            })
+                    }
                 </div>
             </ScrollArea>
         </Card>

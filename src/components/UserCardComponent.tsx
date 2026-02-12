@@ -33,6 +33,8 @@ export const UserCardComponent = ({ username, userId, firstName, lastName }: Use
         });
 
         await promise;
+
+        window.location.reload();
     }
 
     const sendFriendRequest = async (userId: string) => {

@@ -8,9 +8,9 @@ import { Button } from "../ui/button"
 
 import userImg from '../../assets/05.png'
 
-export const PendingFriendRequestCard = ({friendUserId, friendFirstName, friendLastName, friendUserName} : any) => {
+export const PendingFriendRequestCard = ({friendUserId, friendshipId, friendFirstName, friendLastName, friendUserName} : any) => {
     return(
-        <div className="flex gap-4 w-full h-16  px-6 items-center cursor-pointer]">
+        <div className="flex gap-4 w-full h-16  px-4 items-center border rounded-md">
             <div className=" relative">
                 <Avatar className=" w-10 h-10 overflow-visible">
                     <AvatarImage src={userImg}/>

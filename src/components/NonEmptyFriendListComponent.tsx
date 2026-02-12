@@ -10,6 +10,8 @@ import { ChevronsUpDown } from "lucide-react"
 import { useState } from "react";
 
 import { PendingFriendRequestCard } from "./friendsUi/PendingFriendRequestCard";
+import { IncomingFriendRequestCard } from "./friendsUi/IncomingFriendRequestCard";
+import { FriendCard } from "./friendsUi/FriendCard";
 
 type FriendshipListItem = {
     friendshipId   : string;
@@ -47,13 +49,18 @@ export const NonEmptyFriendListComponent = ({incomingFriendRequests, pendingFrie
                         </Button>
                     </CollapsibleTrigger>
                 </div>
-                <CollapsibleContent className="flex flex-col gap-2">
+                <CollapsibleContent className="flex flex-col gap-2 p-2">
                     {
                         incomingFriendRequests.map((friend) => {
                             return (
-                                <div key={friend.friendshipId}>
-                                    {friend.otherUsername}
-                                </div>
+                                <IncomingFriendRequestCard 
+                                    key             = { friend.friendshipId   } 
+                                    friendshipId    = { friend.friendshipId   }
+                                    friendUserId    = { friend.otherUserId    } 
+                                    friendFirstName = { friend.otherFirstName } 
+                                    friendLastName  = { friend.otherLastName  } 
+                                    friendUserName  = { friend.otherUsername  }
+                                />
                             );
                         })
                     }
@@ -71,11 +78,18 @@ export const NonEmptyFriendListComponent = ({incomingFriendRequests, pendingFrie
                         </Button>
                     </CollapsibleTrigger>
                 </div>
-                <CollapsibleContent className="flex flex-col gap-2">
+                <CollapsibleContent className="flex flex-col gap-2 p-2">
                     {
                         pendingFriendRequests.map((friend) => {
                             return (
-                                <PendingFriendRequestCard key={friend.friendshipId} friendUserId={friend.otherUserId} friendFirstName={friend.otherFirstName} friendLastName={friend.otherLastName} friendUserName={friend.otherUsername}/>
+                                <PendingFriendRequestCard 
+                                    key             = { friend.friendshipId   } 
+                                    friendshipId    = { friend.friendshipId   }
+                                    friendUserId    = { friend.otherUserId    } 
+                                    friendFirstName = { friend.otherFirstName } 
+                                    friendLastName  = { friend.otherLastName  } 
+                                    friendUserName  = { friend.otherUsername  }
+                                />
                             );
                         })
                     }
@@ -93,13 +107,18 @@ export const NonEmptyFriendListComponent = ({incomingFriendRequests, pendingFrie
                         </Button>
                     </CollapsibleTrigger>
                 </div>
-                <CollapsibleContent className="flex flex-col gap-2">
+                <CollapsibleContent className="flex flex-col gap-2 p-2">
                     {
                         friends.map((friend) => {
                             return (
-                                <div key={friend.friendshipId}>
-                                    {friend.otherUsername}
-                                </div>
+                                <FriendCard 
+                                    key             = { friend.friendshipId   } 
+                                    friendshipId    = { friend.friendshipId   }
+                                    friendUserId    = { friend.otherUserId    } 
+                                    friendFirstName = { friend.otherFirstName } 
+                                    friendLastName  = { friend.otherLastName  } 
+                                    friendUserName  = { friend.otherUsername  }
+                                />
                             );
                         })
                     }

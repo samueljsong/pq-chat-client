@@ -7,12 +7,12 @@ import { useEffect, useState } from "react";
 import placeholder from '../assets/placeholder.svg'
 
 // Import Components
-import { Search } from "lucide-react";
+import { Search            } from "lucide-react";
 import { UserCardComponent } from "./UserCardComponent";
 
 export const FriendRoomComponent = () => {
-    const [search, setSearch] = useState("");
-    const [users, setUsers] = useState([]);
+    const [ search , setSearch ] = useState("");
+    const [ users  , setUsers  ] = useState([]);
 
     useEffect(() => {
         if (!search) {
@@ -62,15 +62,20 @@ export const FriendRoomComponent = () => {
             </div> 
             {
                 (users.length === 0) 
-                    ?   <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2 items-center justify-center">
-                            <img src={placeholder} alt="" className=" w-64 h-64"/>
-                        </div>
-                    :   
-                        <div className=" flex gap-4 w-full flex-wrap">
-                            {users.map((user: any) => (
-                                <UserCardComponent key={user.userId} userId={user.userId} username={user.username} firstName={user.firstName} lastName={user.lastName} />
-                            ))}
-                        </div>
+                ?   <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2 items-center justify-center">
+                        <img src={placeholder} alt="" className=" w-64 h-64"/>
+                    </div>
+                :   <div className=" flex gap-4 w-full flex-wrap">
+                        {users.map((user: any) => (
+                            <UserCardComponent 
+                                key       ={ user.userId    } 
+                                userId    ={ user.userId    } 
+                                username  ={ user.username  } 
+                                firstName ={ user.firstName } 
+                                lastName  ={ user.lastName  } 
+                            />
+                        ))}
+                    </div>
             }
         </div>
     )
