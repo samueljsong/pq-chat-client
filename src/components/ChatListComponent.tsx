@@ -6,22 +6,22 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Separator } from "./ui/separator";
-import { PlusIcon } from "@radix-ui/react-icons";
-import { Search } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area"
-
-import { ChatCardComponent } from "@/components/ChatCardComponent";
+import { Button                 } from "@/components/ui/button";
+import { Input                  } from "@/components/ui/input";
+import { Separator              } from "./ui/separator";
+import { PlusIcon               } from "@radix-ui/react-icons";
+import { Search                 } from "lucide-react";
+import { ScrollArea             } from "@/components/ui/scroll-area"
+import { ChatCardComponent      } from "@/components/ChatCardComponent";
 import { EmptyChatListComponent } from "./EmptyChatListComponent";
 
 import type { ConversationListItem } from "@/types/ConversationType";
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthorizationContext";
+import { useRealtime } from "@/hooks/useRealtime";
 
-export const ChatListComponent = () => {
+export const ChatListComponent = ({onSelectChat} : any) => {
 
     const { token } = useAuth();
     const [chatList, setChatList] = useState<ConversationListItem[]>([]);
@@ -55,6 +55,12 @@ export const ChatListComponent = () => {
         load();
     }, [token])
 
+    const { joinConversation } = useRealtime();
+
+    const onOpenChatClickHandler = (conversationId : string) => {
+        onSelectChat(conversationId);
+        joinConversation(conversationId);
+    }
 
     return(
         <Card className=" bg-white h-full w-110 min-w-90 rounded-xl pb-0 flex flex-col">
@@ -90,6 +96,7 @@ export const ChatListComponent = () => {
                                         otherUserName      = { chat.otherUsername      } 
                                         lastMessagePreview = { chat.lastMessagePreview } 
                                         lastMessageAt      = { chat.lastMessageAt      }
+                                        onOpenChat         = { onOpenChatClickHandler  }
                                     />
                                     <Separator/>
                                 </>

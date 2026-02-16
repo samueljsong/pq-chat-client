@@ -6,10 +6,10 @@ import {
 
 import userImg from '../assets/01.png'
 
-export const ChatCardComponent = ({conversationId, otherFirstName, otherLastName, otherUserName, lastMessagePreview, lastMessageAt} : any) => {
+export const ChatCardComponent = ({conversationId, otherFirstName, otherLastName, otherUserName, lastMessagePreview, lastMessageAt, onOpenChat} : any) => {
 
     return(
-        <div className="flex gap-4 w-full h-16  px-6 items-center cursor-pointer hover:bg-[#EFF2F9]">
+        <div onClick={onOpenChat(conversationId)} className="flex gap-4 w-full h-16  px-6 items-center cursor-pointer hover:bg-[#EFF2F9]">
             <div className=" relative">
                 <Avatar className=" w-10 h-10 overflow-visible">
                     <AvatarImage src={userImg}/>

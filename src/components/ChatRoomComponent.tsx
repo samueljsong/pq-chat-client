@@ -17,17 +17,48 @@ import placeholder from '../assets/placeholder.svg'
 
 // Import Components
 import { MessageComponent } from "./MessageComponent";
+import { useRealtime } from "@/hooks/useRealtime";
 
-export const ChatRoomComponent = () => {
+export const ChatRoomComponent = ({selectedChat} : any) => {
 
-    const [chat, setChat] = useState(null);
-    const [messages, setMessages] = useState([]);
+    type Message = {
+        id: string;
+        text: string;
+        isMe: boolean;
+    };
+    
+    const { sendMessage } = useRealtime();
+
+    const [ input, setInput ] = useState("");
+    const [messages, setMessages] = useState<Message[]>([]);
+
+    const onSend = () => {
+        if (!selectedChat) return;
+        const text = input.trim();
+        if (!text) return;
+
+        // PROTOTYPE: treat plaintext as ciphertext.
+        // Later: replace with your LWE/KEM + symmetric encryption output.
+        const ciphertext = text;
+
+        // send to TCP server via gateway
+        sendMessage(selectedChat.conversationId, ciphertext);
+
+        // local optimistic UI
+        setMessages((prev) : any => [
+                ...prev,
+                { id: crypto.randomUUID(), text, isMe: true },
+            ]
+        );
+
+        setInput("");
+    };
 
     return(
         <div className="h-full w-full flex flex-col">
             <div className="mb-4">
             {
-                (chat === null)
+                (selectedChat === null)
                     ?   <div></div>
                     :   <div className=" relative flex gap-2 items-center">
                             <Avatar className=" w-10 h-10 overflow-visible">
@@ -47,8 +78,9 @@ export const ChatRoomComponent = () => {
                             <img src={placeholder} alt="" className=" w-64 h-64"/>
                         </div>
                     :   <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2">
-                            <MessageComponent text={"Hey man, how are you doing these days?"}/>
-                            <MessageComponent text={"I'm doing great, thanks for asking!"} isMe={true}/>
+                            {messages.map((m) => (
+                                <MessageComponent key={m.id} text={m.text} isMe={m.isMe} />
+                            ))}
                         </div>
             }
             <div className="h-14">
@@ -56,8 +88,17 @@ export const ChatRoomComponent = () => {
                         <Input
                             className=" h-full"
                             placeholder="Enter Message..."
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            disabled={!selectedChat}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter")
+                                    onSend();
+                            }}
                         />
                         <Button 
+                            onClick={onSend}
+                            disabled={!selectedChat || input.trim().length === 0}
                             className="
                                 absolute right-3 top-1/2 -translate-y-1/2 
                                 bg-white text-muted-foreground border 
