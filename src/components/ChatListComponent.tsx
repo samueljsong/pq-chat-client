@@ -20,6 +20,7 @@ import type { ConversationListItem } from "@/types/ConversationType";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthorizationContext";
 import { useRealtime } from "@/hooks/useRealtime";
+import { startKeyExchange } from "@/crypto/crypto";
 
 export const ChatListComponent = ({onSelectChat} : any) => {
 
@@ -57,10 +58,11 @@ export const ChatListComponent = ({onSelectChat} : any) => {
 
     const { joinConversation } = useRealtime();
 
-    const onOpenChatClickHandler = (conversationId : string) => {
-        onSelectChat(conversationId);
-        joinConversation(conversationId);
+    const onOpenChatClickHandler = (chat: ConversationListItem) => {
+        onSelectChat(chat);
+        joinConversation(chat.conversationId);
     }
+
 
     return(
         <Card className=" bg-white h-full w-110 min-w-90 rounded-xl pb-0 flex flex-col">
@@ -89,14 +91,9 @@ export const ChatListComponent = ({onSelectChat} : any) => {
                             : chatList.map((chat) => {
                                 return <>
                                     <ChatCardComponent 
-                                        key                = { chat.conversationId     } 
-                                        conversationId     = { chat.conversationId     } 
-                                        otherFirstName     = { chat.otherFirstName     } 
-                                        otherLastName      = { chat.otherLastName      } 
-                                        otherUserName      = { chat.otherUsername      } 
-                                        lastMessagePreview = { chat.lastMessagePreview } 
-                                        lastMessageAt      = { chat.lastMessageAt      }
-                                        onOpenChat         = { onOpenChatClickHandler  }
+                                        key        = { chat.conversationId    } 
+                                        chat       = { chat                   }
+                                        onOpenChat = { onOpenChatClickHandler }
                                     />
                                     <Separator/>
                                 </>

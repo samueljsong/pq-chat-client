@@ -1,6 +1,7 @@
-// useRealtime.ts
 import { useEffect, useRef, useCallback } from "react";
+import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/context/AuthorizationContext";
+import { encryptMessage } from "@/crypto/crypto";
 
 type IncomingMsg =
   | { type: "MESSAGE"; conversationId: string; fromUserId: string; ciphertext?: string }
@@ -8,60 +9,63 @@ type IncomingMsg =
 
 type Listener = (msg: IncomingMsg) => void;
 
+const SIO_URL = "http://localhost:3001";
+
 export function useRealtime() {
   const { token } = useAuth();
 
-  const wsRef = useRef<WebSocket | null>(null);
+  const socketRef = useRef<Socket | null>(null);
   const listenersRef = useRef(new Set<Listener>());
   const pendingJoinsRef = useRef<string[]>([]);
 
   useEffect(() => {
     if (!token) return;
 
-    if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
-        return;
-    }
+    // prevent duplicates
+    if (socketRef.current?.connected || socketRef.current?.active) return;
 
-    const ws = new WebSocket(`wss://localhost:7011/ws?token=${token}`);
-    ws.binaryType = "arraybuffer"; // IMPORTANT
-    wsRef.current = ws;
+    const socket = io(SIO_URL, {
+      transports: ["websocket"],
+      auth: { token },
+    });
 
-    ws.onopen = () => {
-      ws.send(JSON.stringify({ type: "AUTH", token }));
+    socketRef.current = socket;
 
-      // flush queued joins (if user clicked before open)
+    socket.on("connect", () => {
+      console.log("SIO connected");
+
       for (const cid of pendingJoinsRef.current) {
-        ws.send(JSON.stringify({ type: "JOIN_CONVERSATION", conversationId: cid }));
+        socket.emit("join_conversation", { conversationId: cid });
       }
       pendingJoinsRef.current = [];
-    };
+    });
 
-    ws.onmessage = async (e) => {
-      try {
-        let text: string;
+    socket.on("server_msg", (raw: any) => {
+    // normalize TCP PascalCase -> camelCase for the UI
+        const msg = {
+            type: raw.Type ?? raw.type,
+            conversationId: raw.ConversationId ?? raw.conversationId,
+            fromUserId: raw.FromUserId ?? raw.fromUserId,
+            ciphertext: raw.Ciphertext ?? raw.ciphertext,
+            userId: raw.UserId ?? raw.userId,
+        };
 
-        if (typeof e.data === "string") {
-          text = e.data;
-        } else if (e.data instanceof ArrayBuffer) {
-          text = new TextDecoder().decode(new Uint8Array(e.data));
-        } else {
-          // Blob
-          text = await e.data.text();
-        }
+        listenersRef.current.forEach((fn) => fn(msg as any));
+    });
 
-        const msg: IncomingMsg = JSON.parse(text);
-        listenersRef.current.forEach((fn) => fn(msg));
-      } catch (err) {
-        console.error("WS message parse failed", err, e.data);
-      }
-    };
 
-    ws.onclose = () => {
-      wsRef.current = null;
-    };
+    socket.on("connect_error", (err) => {
+      console.error("SIO connect_error:", err?.message ?? err);
+    });
+
+    socket.on("disconnect", (reason) => {
+      console.log("SIO disconnected:", reason);
+      socketRef.current = null;
+    });
 
     return () => {
-      try { ws.close(); } catch {}
+      socket.disconnect();
+      socketRef.current = null;
     };
   }, [token]);
 
@@ -71,21 +75,28 @@ export function useRealtime() {
   }, []);
 
   const joinConversation = useCallback((conversationId: string) => {
-    const ws = wsRef.current;
-    const msg = JSON.stringify({ type: "JOIN_CONVERSATION", conversationId });
+    const s = socketRef.current;
 
-    if (!ws || ws.readyState !== WebSocket.OPEN) {
-      pendingJoinsRef.current.push(conversationId);
+    if (!s || !s.connected) {
+      if (!pendingJoinsRef.current.includes(conversationId)) {
+        pendingJoinsRef.current.push(conversationId);
+      }
       return;
     }
-    ws.send(msg);
+
+    s.emit("join_conversation", { conversationId });
   }, []);
 
   const sendMessage = useCallback((conversationId: string, ciphertext: string) => {
-    const ws = wsRef.current;
-    if (!ws || ws.readyState !== WebSocket.OPEN) return;
 
-    ws.send(JSON.stringify({ type: "SEND_MESSAGE", conversationId, ciphertext }));
+    // this is just stub
+    const stubCipherText = encryptMessage(ciphertext, conversationId);
+    console.log("SENDING:", { conversationId, stubCipherText });
+
+    const s = socketRef.current;
+    if (!s || !s.connected) return;
+
+    s.emit("send_message", { conversationId, ciphertext });
   }, []);
 
   return { joinConversation, sendMessage, onMessage };

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "./ui/button";
 
 // React
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Assets
 import userImg from '../assets/01.png'
@@ -18,6 +18,7 @@ import placeholder from '../assets/placeholder.svg'
 // Import Components
 import { MessageComponent } from "./MessageComponent";
 import { useRealtime } from "@/hooks/useRealtime";
+import { encryptMessage } from "@/crypto/crypto";
 
 export const ChatRoomComponent = ({selectedChat} : any) => {
 
@@ -26,30 +27,64 @@ export const ChatRoomComponent = ({selectedChat} : any) => {
         text: string;
         isMe: boolean;
     };
-    
-    const { sendMessage } = useRealtime();
+
+    const { sendMessage, onMessage } = useRealtime();
 
     const [ input, setInput ] = useState("");
     const [messages, setMessages] = useState<Message[]>([]);
 
+    // =========================
+    // LISTEN FOR INCOMING MESSAGES
+    // =========================
+    useEffect(() : any => {
+        const unsubscribe = onMessage((msg: any) => {
+            if (msg.type !== "MESSAGE") return;
+            if (!selectedChat) return;
+
+            // selectedChat may be object or id depending on your state
+            const selectedConversationId =
+                typeof selectedChat === "string"
+                    ? selectedChat
+                    : selectedChat.conversationId;
+
+            if (msg.conversationId !== selectedConversationId) return;
+
+            setMessages(prev => [
+                ...prev,
+                {
+                    id: crypto.randomUUID(),
+                    text: msg.ciphertext ?? "",
+                    isMe: false
+                }
+            ]);
+        });
+
+        return unsubscribe;
+    }, [onMessage, selectedChat]);
+
+    // =========================
+    // SEND MESSAGE
+    // =========================
     const onSend = () => {
         if (!selectedChat) return;
+
         const text = input.trim();
         if (!text) return;
 
-        // PROTOTYPE: treat plaintext as ciphertext.
-        // Later: replace with your LWE/KEM + symmetric encryption output.
-        const ciphertext = text;
+        const conversationId =
+            typeof selectedChat === "string"
+                ? selectedChat
+                : selectedChat.conversationId;
 
-        // send to TCP server via gateway
-        sendMessage(selectedChat.conversationId, ciphertext);
+        const ciphertext = encryptMessage(text, selectedChat.conversationId);
 
-        // local optimistic UI
-        setMessages((prev) : any => [
-                ...prev,
-                { id: crypto.randomUUID(), text, isMe: true },
-            ]
-        );
+        sendMessage(conversationId, text);
+
+        // optimistic UI
+        setMessages(prev => [
+            ...prev,
+            { id: crypto.randomUUID(), text, isMe: true }
+        ]);
 
         setInput("");
     };
